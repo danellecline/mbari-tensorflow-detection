@@ -30,8 +30,8 @@ class LabelAggregator():
          """
         
         # remove existing directory
-        if os.path.exists(self.output_dir): 
-            shutil.rmtree(self.output_dir)
+        #if os.path.exists(self.output_dir):
+        #    shutil.rmtree(self.output_dir)
             
         # setup new directory structure 
         annotate_dir = os.path.join(self.output_dir, conf.COLLECTION_NAME, conf.ANNOTATION_DIR)
@@ -64,7 +64,7 @@ class LabelAggregator():
                         xml_out = os.path.join(annotate_dir, file + ext)
                         print('Writing {0}'.format(xml_out))
                         f = open(xml_out, "w")
-                        f.write(str(soup))
+                        f.write(soup.decode_contents())
                         f.close() 
     
                         # copy the source image to the correct spot
