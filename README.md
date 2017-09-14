@@ -1,62 +1,37 @@
 # mbari-tensorflow-detection
-
-RESTORE image from accidental delete !!!! using Windowss
  
+Code for testing Tensorflow detection API on underwater imagery
+
+## Prerequisites
  
-mount the atlas deep learning share
+- Python version  3.5.4, on a Mac OSX download and install from here:
+ https://www.python.org/downloads/mac-osx/ 
 
-run in pycharm on test directory
+## Running
 
+Create virtual environment with correct dependencies
 
-need to replace the image path with the correct one referenced to where the images will be for training ?
+    $ pip3 install virtualenv
+    $ virtualenv --python=/usr/local/bin/python3.5 venv-pam
+    $ source venv-pam/bin/activate
+    $ pip3 install -r requirements.txt
+    $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-0.12.1-py3-none-any.whl
+    $ pip3 install --upgrade $TF_BINARY_URL
 
-/raid/nyee/datasets/frcnn_data/D0232_04HD/xmls
+Check-out code
 
-Install Tensorflow from source
-https://www.tensorflow.org/install/install_sources
+    $ git clone https://github.com/danellecline/mbari-tensorflow-detection
 
-Install your own dataset
-https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md
+TODO: Add steps for running below
 
-Replace globally 
-</filename> with .png</filename>
-and <folder>imgs</folder> with <folder>D0232_04HD</folder>
+*  Run BLED detector
+*  Save results to folder in TBD format
+*  etc.
 
-Checkout labelme output and see if that conforms to the PASCAL format expected in the 
-create_pascal_tf_record script and don't force it to be the same if it's different.
+## Developer Notes
 
-instead, pass the parent directory of the xml file which is the basename for he tape number and 
-use that. The dataset directory is the roof ot all the data
+A placeholder for notes that might be useful for developers
 
-mkdir -p ~/Dropbox/GitHub/mbari-tensorflow-detection/data/annotate/D0232_04HD/imgs/
-mkdir -p ~/Dropbox/GitHub/mbari-tensorflow-detection/data/annotate/D0232_04HD/xmls/
+* Install Tensorflow from source https://www.tensorflow.org/install/install_sources
+* Install your own dataset https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md
  
- 
- 
- We know that annotate output of labelme produces xmls with format
- 
- <annotation>
-  <filename>D0232_04HD_00-02-50.png</filename>
-  <folder>D0232_04HD</folder>
-  <source>
-    <sourceImage>MBARI ROV Video</sourceImage>
-    <sourceAnnotation>LabelMe Webtool</sourceAnnotation>
-  </source>
-  <object>
-    <name>d</name>
-    
- Nathan's output was
- <annotation verified="no">
-  <folder>D0232_04HD</folder>
-  <filename>D0232_04HD_00-03-50.png</filename>
-  <path>/home/nathan/datasets/frcnn_data/D0232_04HD/imgs/D0232_04HD_00-03-50.png</path>
-  <source>
-    <database>Unknown</database>
-  </source>
-  <size>
-    <width>960</width>
-    <height>540</height>
-    <depth>3</depth>
-  </size>
-  <segmented>0</segmented>
-</annotation>
