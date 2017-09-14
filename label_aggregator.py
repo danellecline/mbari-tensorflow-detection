@@ -4,7 +4,7 @@ import glob
 import shutil
 from bs4 import BeautifulSoup, Tag
 import conf
-import lxml.etree as etree
+import xml.dom.minidom
 
 class LabelAggregator():
     """
@@ -42,31 +42,50 @@ class LabelAggregator():
         with open(os.path.join(self.output_dir, conf.COLLECTION_NAME, self.file_listing), 'w') as fid:
 
             for path in self.annotation_dirs:
-                for xml in glob.iglob(path+ '/**/*.xml', recursive=True): 
-                    if self.file_standards(xml): 
+                for xml_in in glob.iglob(path+ '/**/*.xml', recursive=True):
+                    if self.file_standards(xml_in):
                          
-                        # find the source image in the xml file and replace  
-                        infile = open(xml, "r")
+                        # find the source image in the xml_in file and replace
+                        infile = open(xml_in, "r")
                         contents = infile.read() 
-                        print('Parsing {0}'.format(xml))
-                        soup = BeautifulSoup(contents, 'xml') 
-    
-                        soup.path.string = conf.COLLECTION_NAME 
-                        soup.path.folder = conf.PNG_DIR
-                        
-                        file_root = os.path.basename(xml)
+                        print('Parsing {0}'.format(xml_in))
+                        soup = BeautifulSoup(contents, 'xml')
+
+                        # rename the folder to the collection name
+                        soup.folder.string = conf.COLLECTION_NAME
+
+                        # remove the path
+                        d = soup.find('path')
+                        d.extract()
+
+                        file_root = os.path.basename(xml_in)
                         file, ext = os.path.splitext(file_root)
-    
+
+                        # add the image tag to the source
+                        image_tag = Tag(name="image")
+                        image_tag.string = 'ROV Dive {0}'.format(file_root[0:9])
+                        soup.source.insert(1, image_tag)
+
+                        # apppend png to the filename and write out to the txt file
                         image_name =  file + '.png'
-                        soup.path.file = image_name
+                        soup.filename.string = image_name
                         fid.write(file_root + '\n')
                         
                         xml_out = os.path.join(annotate_dir, file + ext)
-                        print('Writing {0}'.format(xml_out))
-                        f = open(xml_out, "w")
+                        print('Writing {0}'.format('tmp.xml'))
+                        f = open('tmp.xml', "w")
                         f.write(soup.decode_contents())
-                        f.close() 
-    
+                        f.close()
+
+                        # a bit of hacky workaround to print a better looking xml than what beautifulsoup produces
+                        xmlf = xml.dom.minidom.parse('tmp.xml')  # or xml.dom.minidom.parseString(xml_string)
+                        pretty_xml_as_string = xmlf.toprettyxml()
+                        # remove empty lines
+                        pretty_xml_as_string = os.linesep.join([s for s in pretty_xml_as_string.splitlines() if s.strip()])
+                        with open(xml_out, 'w') as f2:
+                            f2.write(pretty_xml_as_string)
+                        f2.close()
+
                         # copy the source image to the correct spot
                         src = os.path.join(path, 'imgs', image_name)
                         dst = os.path.join(image_dir, image_name)
