@@ -38,8 +38,8 @@ class LabelAggregator():
         image_dir = os.path.join(self.output_dir, conf.COLLECTION_NAME, conf.PNG_DIR)
         self.check_dir(annotate_dir)
         self.check_dir(image_dir) 
-        
-        with open(self.file_listing, 'w') as fid:
+
+        with open(os.path.join(self.output_dir, conf.COLLECTION_NAME, self.file_listing), 'w') as fid:
 
             for path in self.annotation_dirs:
                 for xml in glob.iglob(path+ '/**/*.xml', recursive=True): 
@@ -59,6 +59,7 @@ class LabelAggregator():
     
                         image_name =  file + '.png'
                         soup.path.file = image_name
+                        fid.write(file_root + '\n')
                         
                         xml_out = os.path.join(annotate_dir, file + ext)
                         print('Writing {0}'.format(xml_out))
@@ -73,6 +74,8 @@ class LabelAggregator():
                             shutil.copyfile(src, dst)
                         
                         soup.clear()
+
+        fid.close()
  
  
     def check_dir(self, path):
@@ -103,6 +106,8 @@ class LabelAggregator():
 
 if __name__ == '__main__':
     
-    train = LabelAggregator(conf.TRAIN_VID_KEYS, conf.BASE_DIR_CONVERT)
+    train = LabelAggregator(conf.TRAIN_VID_KEYS, conf.BASE_DIR_CONVERT, 'train.txt')
     train.aggregate()
- 
+
+    train = LabelAggregator(conf.TEST_VID_KEYS, conf.BASE_DIR_CONVERT, 'test.txt')
+    train.aggregate()
