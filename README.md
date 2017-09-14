@@ -24,9 +24,9 @@ Check-out code
 
 TODO: Add steps for running below
 
-*  Run BLED detector
-*  Save results to folder in TBD format
-*  etc.
+* Convert annotations to tfrecords
+* Train model steps
+* Test model steps
 
 ## Developer Notes
 
