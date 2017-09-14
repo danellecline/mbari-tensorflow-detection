@@ -9,18 +9,19 @@ Code for testing Tensorflow detection API on underwater imagery
 
 ## Running
 
+Check-out code
+
+    $ git clone https://github.com/danellecline/mbari-tensorflow-detection
+
 Create virtual environment with correct dependencies
 
     $ pip3 install virtualenv
     $ virtualenv --python=/usr/local/bin/python3.5 venv-pam
-    $ source venv-pam/bin/activate
+    $ source venv-mbari-tensorflow-detection/bin/activate
     $ pip3 install -r requirements.txt
-    $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-0.12.1-py3-none-any.whl
+    $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.3.0-py3-none-any.whl
     $ pip3 install --upgrade $TF_BINARY_URL
-
-Check-out code
-
-    $ git clone https://github.com/danellecline/mbari-tensorflow-detection
+    $ git clone https://github.com/tensorflow/models.git
 
 TODO: Add steps for running below
 
@@ -33,5 +34,5 @@ TODO: Add steps for running below
 A placeholder for notes that might be useful for developers
 
 * Install Tensorflow from source https://www.tensorflow.org/install/install_sources
-* Install your own dataset https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md
+* Install your own dataset (https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md)
  

@@ -1,14 +1,16 @@
 import hashlib
 import io
-import logging
 import os
 import glob
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), './models/'))
 
 from lxml import etree 
 import tensorflow as tf
+
 from PIL import Image
 
-from object_detection.utils import dataset_util
+from models.object_detection.utils import dataset_util
 from models.object_detection.utils import label_map_util
 
 
@@ -61,7 +63,7 @@ def dict_to_tf_example(data,
   height = int(data['size']['height'])
 
   xmin = []
-  ymi   n = []
+  ymin = []
   xmax = []
   ymax = []
   classes = []
