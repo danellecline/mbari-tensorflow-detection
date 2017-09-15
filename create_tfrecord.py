@@ -1,7 +1,7 @@
 import hashlib
 import io
 import os
-import glob
+import logging
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'models/'))
 
@@ -13,17 +13,20 @@ from PIL import Image
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
 
-
 flags = tf.app.flags
-flags.DEFINE_string('data_dir', '', 'Root directory to raw PASCAL VOC dataset.')
-flags.DEFINE_string('annotation_dir', 'Annotations', 'Path to annotations directory.')
+flags.DEFINE_string('data_dir', '', 'Root directory to raw dataset.')
+flags.DEFINE_string('collection', '', 'Name of the collection')
+flags.DEFINE_string('annotations_dir', 'Annotations',
+                    '(Relative) path to annotations directory.')
 flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
 flags.DEFINE_boolean('ignore_difficult_instances', False, 'Whether to ignore '
                      'difficult instances')
 flags.DEFINE_string('label_map_path', 'data/my_label_map.pbtxt',
                     'Path to label map proto')
+flags.DEFINE_string('set', 'train', 'Convert training set, validation set or '
+                    'merged set.')
+SETS = ['train', 'val', 'trainval', 'test']
 FLAGS = flags.FLAGS
-
 
 def dict_to_tf_example(data,
                        dataset_directory,
@@ -36,9 +39,9 @@ def dict_to_tf_example(data,
   by the raw data.
 
   Args:
-    data: dict holding PASCAL XML fields for a single image (obtained by
+    data: dict holding XML fields for a single image (obtained by
       running dataset_util.recursive_parse_xml_to_dict)
-    dataset_directory: Path to root directory holding PASCAL dataset
+    dataset_directory: Path to root directory holding dataset
     label_map_dict: A map from string label names to integers ids.
     ignore_difficult_instances: Whether to skip difficult instances in the
       dataset  (default: False).
@@ -113,31 +116,40 @@ def dict_to_tf_example(data,
 
 
 def main(_):
+    if FLAGS.set not in SETS:
+        raise ValueError('set must be in : {}'.format(SETS))
 
-    data_dir = FLAGS.data_dir
-    base_dir = os.path.basename(FLAGS.output_path)
-
-    # create the base directory if it doesn't exist
-    if not os.path.exists(base_dir):
-        os.makedirs(base_dir)
+    output = os.path.join(FLAGS.data_dir, FLAGS.output_path)
 
     # touch the file if it doesn't already exist
-    if not os.path.exists(FLAGS.output_path):
-        with open(FLAGS.output_path, 'a'):
-            os.utime(FLAGS.output_path)
+    if not os.path.exists(output):
+        with open(output, 'a'):
+            os.utime(output)
 
-    writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
-
+    writer = tf.python_io.TFRecordWriter(output)
     label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
+    print('Reading from %s dataset.', FLAGS.collection)
+    examples_path = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.set + '.txt')
+    annotations_dir = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.annotations_dir)
 
-    for path in glob.glob(FLAGS.annotation_dir + '/*.xml'):
-        with tf.gfile.GFile(path, 'r') as fid:
+    with open(examples_path) as fid:
+        lines = fid.readlines()
+        examples_list = [line.strip() for line in lines]
+
+    for idx, example in enumerate(examples_list):
+        if idx % 10 == 0:
+            logging.info('Processing image %d of %d', idx, len(examples_list))
+        file = os.path.join(annotations_dir, example)
+        with open(file, 'r') as fid:
             xml_str = fid.read()
         xml = etree.fromstring(xml_str)
         data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
         tf_example = dict_to_tf_example(data, FLAGS.data_dir, label_map_dict,
-                              FLAGS.ignore_difficult_instances)
-        writer.write(tf_example.SerializeToString())
+                                  FLAGS.ignore_difficult_instances, 'PNGImages')
+        if tf_example:
+            writer.write(tf_example.SerializeToString())
+        else:
+            logging.warn('No objects found in {0}'.format(example))
 
     writer.close()
 
