@@ -49,9 +49,13 @@ class LabelAggregator():
 
                         # find the source image in the xml_in file and replace
                         infile = open(xml_in, "r")
-                        contents = infile.read() 
-                        print('Parsing {0}'.format(xml_in))
+                        contents = infile.read()
                         soup = BeautifulSoup(contents, 'xml')
+
+                        # skip over annotations with no objects
+                        if not soup.find('object'):
+                            print('No objects found in {0} so skipping'.format(xml_in))
+                            continue
 
                         # rename the folder to the collection name
                         soup.folder.string = conf.COLLECTION_NAME
@@ -90,8 +94,7 @@ class LabelAggregator():
                         # copy the source image to the correct spot
                         src = os.path.join(path, 'imgs', image_name)
                         dst = os.path.join(image_dir, image_name)
-                        if not os.path.exists(dst):
-                            shutil.copyfile(src, dst)
+                        shutil.copyfile(src, dst)
                         
                         soup.clear()
 
