@@ -44,7 +44,9 @@ class LabelAggregator():
             for path in self.annotation_dirs:
                 for xml_in in glob.iglob(path+ '/**/*.xml', recursive=True):
                     if self.file_standards(xml_in):
-                         
+
+                        print('Processing {0}'.format(xml_in))
+
                         # find the source image in the xml_in file and replace
                         infile = open(xml_in, "r")
                         contents = infile.read() 
@@ -61,18 +63,17 @@ class LabelAggregator():
                         file_root = os.path.basename(xml_in)
                         file, ext = os.path.splitext(file_root)
 
-                        # add the image tag to the source
+                        # add the image tag to the source; here we assume it's the first 9 characters
                         image_tag = Tag(name="image")
                         image_tag.string = 'ROV Dive {0}'.format(file_root[0:9])
                         soup.source.insert(1, image_tag)
 
-                        # apppend png to the filename and write out to the txt file
+                        # append png to the filename and write out to the txt file
                         image_name =  file + '.png'
                         soup.filename.string = image_name
                         fid.write(file_root + '\n')
                         
                         xml_out = os.path.join(annotate_dir, file + ext)
-                        print('Writing {0}'.format('tmp.xml'))
                         f = open('tmp.xml', "w")
                         f.write(soup.decode_contents())
                         f.close()
