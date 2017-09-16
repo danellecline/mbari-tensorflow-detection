@@ -35,7 +35,7 @@ When running locally, the tensorflow_models directories should be appended to PY
 This can be done by running the following from tensorflow_models :
 
     $ cd tensorflow_models
-    $ export PYTHONPATH=$PYTHONPATH:`pwd`
+    $ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
     $ cd ..
     
 ### Generate the TFRecord files
@@ -48,17 +48,25 @@ This can be done by running the following from tensorflow_models :
     --data_dir PATH_TO_TRAINING_DATA --collection MBARI_BENTHIC_2017 \
     --output_path MBARI_BENTHIC_2017_test.record --label_map_path  mbari_benthic_label_map.pbtxt --set test 
     
+### Edit the pipeline.config file
+Insert the correct paths for the training/test data
+
 ### Train the model 
      
+    $ python tensorflow_models/object_detection/train.py \
+    --logtostderr \
+    --pipeline_config_path=`pwd`/models/faster_rcnn_resnet50_coco/pipeline.config \ 
+    --train_dir=PATH_TO_TRAINING_DATA/MBARI_BENTHIC_2017 \ 
+    --checkpoint_dir=`pwd`/models/checkpoints/ \
+    --eval_dir=`pwd`/models/faster_rcnn_resnet50_coco/eval
+      
+### Test model steps
+
     $ python tensorflow_models/object_detection/eval.py \
     --logtostderr \
-    --pipeline_config_path=`pwd`/models/faster_rcnn_resnet50_coco.config \
-    --checkpoint_dir=PATH_TO_TRAINING_DATA \
+    --pipeline_config_path=`pwd`/models/faster_rcnn_resnet50_coco/pipeline.config \ 
+    --checkpoint_dir=`pwd`/models/checkpoints/ \
     --eval_dir=PATH_TO_EVAL_DIR
-
-    
-* Train model steps
-* Test model steps
 
 ## Developer Notes
 
