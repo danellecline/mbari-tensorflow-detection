@@ -1,0 +1,15 @@
+beautifulsoup4==4.6.0
+bleach==1.5.0
+bs4==0.0.1
+html5lib==0.9999999
+lxml==3.8.0
+Markdown==2.6.9
+numpy==1.13.1
+olefile==0.44
+pi==0.1.2
+Pillow==4.2.1
+protobuf==3.4.0
+six==1.10.0
+tensorflow==1.3.0
+tensorflow-tensorboard==0.1.6
+Werkzeug==0.12.2
