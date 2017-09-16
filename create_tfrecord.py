@@ -3,7 +3,7 @@ import io
 import os
 import logging
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'models/'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/'))
 
 from lxml import etree
 import tensorflow as tf
@@ -101,7 +101,7 @@ def dict_to_tf_example(data,
           data['filename'].encode('utf8')),
       'image/key/sha256': dataset_util.bytes_feature(key.encode('utf8')),
       'image/encoded': dataset_util.bytes_feature(encoded_png),
-      'image/format': dataset_util.bytes_feature('jpeg'.encode('utf8')),
+      'image/format': dataset_util.bytes_feature('png'.encode('utf8')),
       'image/object/bbox/xmin': dataset_util.float_list_feature(xmin),
       'image/object/bbox/xmax': dataset_util.float_list_feature(xmax),
       'image/object/bbox/ymin': dataset_util.float_list_feature(ymin),
@@ -127,7 +127,7 @@ def main(_):
             os.utime(output)
 
     writer = tf.python_io.TFRecordWriter(output)
-    label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
+    label_map_dict = label_map_util.get_label_map_dict(os.path.join(FLAGS.data_dir,FLAGS.label_map_path))
     print('Reading from %s dataset.', FLAGS.collection)
     examples_path = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.set + '.txt')
     annotations_dir = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.annotations_dir)
