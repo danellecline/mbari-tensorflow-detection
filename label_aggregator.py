@@ -28,10 +28,6 @@ class LabelAggregator():
         In each file, replace the folder, path, etc. with the new data structure for export.
         Dump the file listings to a text file
          """
-        
-        # remove existing directory
-        #if os.path.exists(self.output_dir):
-        #    shutil.rmtree(self.output_dir)
             
         # setup new directory structure 
         annotate_dir = os.path.join(self.output_dir, conf.COLLECTION_NAME, conf.ANNOTATION_DIR)
@@ -132,5 +128,5 @@ if __name__ == '__main__':
     train = LabelAggregator(conf.TRAIN_VID_KEYS, conf.BASE_DIR_CONVERT, 'train.txt')
     train.aggregate()
 
-    train = LabelAggregator(conf.TEST_VID_KEYS, conf.BASE_DIR_CONVERT, 'test.txt')
-    train.aggregate()
+    test = LabelAggregator(conf.TEST_VID_KEYS, conf.BASE_DIR_CONVERT, 'test.txt')
+    test.aggregate()
