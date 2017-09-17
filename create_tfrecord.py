@@ -1,4 +1,5 @@
 import hashlib
+import conf
 import io
 import os
 import logging
@@ -12,26 +13,42 @@ from PIL import Image
 
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
+ 
+SETS = ['train', 'val', 'trainval', 'test'] 
 
-flags = tf.app.flags
-flags.DEFINE_string('data_dir', '', 'Root directory to raw dataset.')
-flags.DEFINE_string('collection', '', 'Name of the collection')
-flags.DEFINE_string('annotations_dir', 'Annotations',
-                    '(Relative) path to annotations directory.')
-flags.DEFINE_string('output_path', '', 'Path to output TFRecord')
-flags.DEFINE_boolean('ignore_difficult_instances', False, 'Whether to ignore '
-                     'difficult instances')
-flags.DEFINE_string('label_map_path', 'data/my_label_map.pbtxt',
-                    'Path to label map proto')
-flags.DEFINE_string('set', 'train', 'Convert training set, validation set or '
-                    'merged set.')
-SETS = ['train', 'val', 'trainval', 'test']
-FLAGS = flags.FLAGS
+def process_command_line():
+    '''
+    Process command line
+    :return: args object
+    ''' 
+    
+    import argparse
+    from argparse import RawTextHelpFormatter
+
+    examples = 'Examples:' + '\n\n'
+    examples += 'Create record for xml files in /Volumes/DeepLearningTests/nyee_datasets/frcnn_data/:\n'
+    examples += '{0} --data_dir /Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ --collection ' \
+                'MBARI_BENTHIC_2017 --output_path MBARI_BENTHIC_2017_test.record --label_map_path mbari_benthic_label_map.pbtxt' \
+                '--set test '.format(sys.argv[0])
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter,
+                                     description='Creates Tensorflow Record object for MBARI annotated data',
+                                     epilog=examples)
+    parser.add_argument('-d', '--data_dir',action='store', help='Root directory to raw dataset',required=True)
+    parser.add_argument('-c', '--collection',action='store', help='Name of the collection. Also the subdirectory name '
+                                                                  'for the raw dataset', default='MBARI_BENTHIC_2017',required=False)
+    parser.add_argument('-a', '--annotations_dir',action='store', help='(Relative) path to annotations directory', default='Annotations', required=False)
+    parser.add_argument('-o', '--output_path',action='store', help='Path to output TFRecord', required=True)
+    parser.add_argument('-l', '--label_map_path',action='store', help='Path to label map proto', required=True) 
+    parser.add_argument('-s', '--set',action='store', help='Convert training set, validation set or merged set.', required=True) 
+    parser.add_argument('--labels', action='store', help='List of space separated labels to load. Must be in the label map proto', nargs='*', required=False)
+     
+    args = parser.parse_args()
+    return args
 
 def dict_to_tf_example(data,
                        dataset_directory,
                        label_map_dict,
-                       ignore_difficult_instances=False,
+                       labels,
                        image_subdirectory='imgs'):
   """Convert XML derived dict to tf.Example proto.
 
@@ -42,9 +59,8 @@ def dict_to_tf_example(data,
     data: dict holding XML fields for a single image (obtained by
       running dataset_util.recursive_parse_xml_to_dict)
     dataset_directory: Path to root directory holding dataset
-    label_map_dict: A map from string label names to integers ids.
-    ignore_difficult_instances: Whether to skip difficult instances in the
-      dataset  (default: False).
+    label_map_dict: A map from string label names to integers ids. 
+    labels: list of labels to include in the record
     image_subdirectory: String specifying subdirectory within the
       PASCAL dataset directory holding the actual image data.
 
@@ -75,13 +91,9 @@ def dict_to_tf_example(data,
   classes_text = []
   truncated = []
   poses = []
-  difficult_obj = []
   for obj in data['object']:
-    difficult = bool(int(obj['difficult']))
-    if ignore_difficult_instances and difficult:
-      continue
-
-    difficult_obj.append(int(difficult))
+    if labels and obj['name'] not in labels:
+        continue
 
     xmin.append(float(obj['bndbox']['xmin']) / width)
     ymin.append(float(obj['bndbox']['ymin']) / height)
@@ -108,7 +120,6 @@ def dict_to_tf_example(data,
       'image/object/bbox/ymax': dataset_util.float_list_feature(ymax),
       'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
       'image/object/class/label': dataset_util.int64_list_feature(classes),
-      'image/object/difficult': dataset_util.int64_list_feature(difficult_obj),
       'image/object/truncated': dataset_util.int64_list_feature(truncated),
       'image/object/view': dataset_util.bytes_list_feature(poses),
   }))
@@ -116,10 +127,12 @@ def dict_to_tf_example(data,
 
 
 def main(_):
-    if FLAGS.set not in SETS:
+    args = process_command_line()
+    
+    if args.set not in SETS:
         raise ValueError('set must be in : {}'.format(SETS))
 
-    output = os.path.join(FLAGS.data_dir, FLAGS.output_path)
+    output = os.path.join(args.data_dir, args.output_path)
 
     # touch the file if it doesn't already exist
     if not os.path.exists(output):
@@ -127,10 +140,10 @@ def main(_):
             os.utime(output)
 
     writer = tf.python_io.TFRecordWriter(output)
-    label_map_dict = label_map_util.get_label_map_dict(os.path.join(FLAGS.data_dir,FLAGS.label_map_path))
-    print('Reading from %s dataset.', FLAGS.collection)
-    examples_path = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.set + '.txt')
-    annotations_dir = os.path.join(FLAGS.data_dir, FLAGS.collection, FLAGS.annotations_dir)
+    label_map_dict = label_map_util.get_label_map_dict(os.path.join(args.data_dir,args.label_map_path))
+    print('Reading from %s dataset.', args.collection)
+    examples_path = os.path.join(args.data_dir, args.collection, args.set + '.txt')
+    annotations_dir = os.path.join(args.data_dir, args.collection, args.annotations_dir)
 
     with open(examples_path) as fid:
         lines = fid.readlines()
@@ -144,8 +157,7 @@ def main(_):
             xml_str = fid.read()
         xml = etree.fromstring(xml_str)
         data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
-        tf_example = dict_to_tf_example(data, FLAGS.data_dir, label_map_dict,
-                                  FLAGS.ignore_difficult_instances, 'PNGImages')
+        tf_example = dict_to_tf_example(data, args.data_dir, label_map_dict, args.labels, conf.PNG_DIR)
         if tf_example:
             writer.write(tf_example.SerializeToString())
         else:
