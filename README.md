@@ -4,7 +4,7 @@ Code for testing Tensorflow detection API on underwater imagery
 
 ## Prerequisites
  
-- Python version  3.5.4, on a Mac OSX download and install from here:
+- Python version  3.5, on a Mac OSX download and install from here:
  https://www.python.org/downloads/mac-osx/ 
 
 ## Running
@@ -13,15 +13,23 @@ Code for testing Tensorflow detection API on underwater imagery
 
     $ git clone https://github.com/danellecline/mbari-tensorflow-detection
 
-### Create virtual environment with correct dependencies, install tensorflow
+### Create virtual environment with correct dependencies
 
     $ cd mbari-tensorflow-detection
     $ pip3 install virtualenv
-    $ virtualenv --python=/usr/local/bin/python3.5 venv-pam
+    $ virtualenv --python=/usr/local/bin/python3.5 venv-mbari-tensorflow-detection
     $ source venv-mbari-tensorflow-detection/bin/activate
     $ pip3 install -r requirements.txt
+    
+### Install Tensorflow for Mac OSX
     $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.3.0-py3-none-any.whl
     $ pip3 install --upgrade $TF_BINARY_URL
+    
+### Install Tensorflow for Ubuntu GPU
+Also see [https://www.tensorflow.org/install/install_linux](https://www.tensorflow.org/install/install_linux)
+
+    $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.3.0-cp35-cp35m-linux_x86_64.whl 
+    $ pip3 install --upgrade tensorflow-gpu==1.3.0
     
 ### Install Tensorflow models and object detection protocols
     $ git clone https://github.com/tensorflow/models.git tensorflow_models
@@ -49,18 +57,17 @@ This can be done by running the following from tensorflow_models :
     --output_path MBARI_BENTHIC_2017_test.record --label_map_path  mbari_benthic_label_map.pbtxt --set test 
     
 ### Edit the pipeline.config file
-Insert the correct paths for the training/test data
+Insert the correct paths for the training/test data in PATH_TO_BE_CONFIGURED 
 
 ### Train the model 
      
     $ python tensorflow_models/object_detection/train.py \
     --logtostderr \
     --pipeline_config_path=`pwd`/models/faster_rcnn_resnet50_coco/pipeline.config \ 
-    --train_dir=PATH_TO_TRAINING_DATA/MBARI_BENTHIC_2017 \ 
-    --checkpoint_dir=`pwd`/models/checkpoints/ \
+    --train_dir=`pwd`/models/faster_rcnn_resnet50_coco/checkpoints \ 
     --eval_dir=`pwd`/models/faster_rcnn_resnet50_coco/eval
       
-### Test model steps
+### Test the model 
 
     $ python tensorflow_models/object_detection/eval.py \
     --logtostderr \
@@ -68,11 +75,18 @@ Insert the correct paths for the training/test data
     --checkpoint_dir=`pwd`/models/checkpoints/ \
     --eval_dir=PATH_TO_EVAL_DIR
 
+## Bug fix
+add to tensorflow_models/object_detection/core/preprocessor.py 
+mean = list(mean) before lines 1474.
+https://www.bountysource.com/issues/48005318-bug-change-protobuf-to-list-in-object-detection-api
+
 ## Developer Notes
 
+TF_CONFIG - environment variable
+
 A placeholder for notes that might be useful for developers
- 
+* Pre processing options [https://github.com/tensorflow/models/blob/master/object_detection/protos/preprocessor.proto](https://github.com/tensorflow/models/blob/master/object_detection/protos/preprocessor.proto) 
 * Install your own dataset [https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/using_your_own_dataset.md)
-* Install TensorFlow Object Detection API [https://github.com/tensorflow/models/blob/master/object_detection/g3doc/installation.md](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/installation.md) 
+* Install TensorFlow Object Detection API [dhttps://github.com/tensorflow/models/blob/master/object_detection/g3doc/installation.m](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/installation.md) 
 * Running in the cloud [https://cloud.google.com/blog/big-data/2017/09/performing-prediction-with-tensorflow-object-detection-models-on-google-cloud-machine-learning-engine](https://cloud.google.com/blog/big-data/2017/09/performing-prediction-with-tensorflow-object-detection-models-on-google-cloud-machine-learning-engine)
 * Configuring option detection pipeline [https://github.com/tensorflow/models/blob/master/object_detection/g3doc/configuring_jobs.md](https://github.com/tensorflow/models/blob/master/object_detection/g3doc/configuring_jobs.md)
