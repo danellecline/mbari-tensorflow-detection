@@ -91,10 +91,13 @@ def dict_to_tf_example(data,
   classes_text = []
   truncated = []
   poses = []
+  difficult_obj = []
+
   for obj in data['object']:
     if labels and obj['name'] not in labels:
         continue
-
+    difficult = bool(int(obj['difficult']))
+    difficult_obj.append(int(difficult))
     xmin.append(float(obj['bndbox']['xmin']) / width)
     ymin.append(float(obj['bndbox']['ymin']) / height)
     xmax.append(float(obj['bndbox']['xmax']) / width)
