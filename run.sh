@@ -11,7 +11,7 @@ if $2 == 'train'; then
 python tensorflow_models/object_detection/train.py \
 --logtostderr \
 --pipeline_config_path=`pwd`/models/$1/pipeline_devbox.config \
---train_dir=`pwd`/models/$1/$2/ \
+--train_dir=`pwd`/models/$1/train/ \
 --eval_dir=`pwd`/models/$1/eval/
 
 elif $2 == 'test'; then
