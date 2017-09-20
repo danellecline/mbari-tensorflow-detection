@@ -14,7 +14,7 @@ from PIL import Image
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
  
-SETS = ['train', 'val', 'trainval', 'test'] 
+SETS = ['train', 'val', 'trainval', 'test']
 
 def process_command_line():
     '''
@@ -92,10 +92,12 @@ def dict_to_tf_example(data,
   truncated = []
   poses = []
   difficult_obj = []
+  num_objs = 0
 
   for obj in data['object']:
     if labels and obj['name'] not in labels:
         continue
+    num_objs += 1
     difficult = bool(int(obj['difficult']))
     difficult_obj.append(int(difficult))
     xmin.append(float(obj['bndbox']['xmin']) / width)
@@ -126,7 +128,7 @@ def dict_to_tf_example(data,
       'image/object/truncated': dataset_util.int64_list_feature(truncated),
       'image/object/view': dataset_util.bytes_list_feature(poses),
   }))
-  return example
+  return example, num_objs
 
 
 def main(_):
@@ -152,6 +154,7 @@ def main(_):
         lines = fid.readlines()
         examples_list = [line.strip() for line in lines]
 
+    ttl_objs = 0
     for idx, example in enumerate(examples_list):
         if idx % 10 == 0:
             logging.info('Processing image %d of %d', idx, len(examples_list))
@@ -160,13 +163,15 @@ def main(_):
             xml_str = fid.read()
         xml = etree.fromstring(xml_str)
         data = dataset_util.recursive_parse_xml_to_dict(xml)['annotation']
-        tf_example = dict_to_tf_example(data, args.data_dir, label_map_dict, args.labels, conf.PNG_DIR)
+        tf_example, num_objs = dict_to_tf_example(data, args.data_dir, label_map_dict, args.labels, conf.PNG_DIR)
         if tf_example:
+            ttl_objs += num_objs
             writer.write(tf_example.SerializeToString())
         else:
             logging.warn('No objects found in {0}'.format(example))
 
     writer.close()
+    print('Done. Found {0} examples in {1} set'.format(ttl_objs, args.set))
 
 if __name__ == '__main__':
   tf.app.run()
