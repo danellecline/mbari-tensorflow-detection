@@ -6,7 +6,7 @@ Code for testing Tensorflow detection API on underwater imagery
  
 - Python version  3.5, on a Mac OSX download and install from here:
  https://www.python.org/downloads/mac-osx/ 
-- [Bazel](https://docs.bazel.build/versions/master/install.html)
+- [Protobuf](https://developers.google.com/protocol-buffers/)
 
 ## Running
 
