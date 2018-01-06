@@ -5,75 +5,35 @@ item {
 
 item {
   id: 2
-  name: 'CYSTECHINUS_LOVENI'
-}
-
-item {
-  id: 3
   name: 'ECHINOCREPIS'
 }
 
 item {
-  id: 4
+  id: 3
   name: 'ELPIDIA'
 }
 
 item {
-  id: 5
-  name: 'FISH'
-}
-
-item {
-  id: 6
-  name: 'FUNGIACYATHUS_MARENZELLERI'
-}
-
-item {
-  id: 7
-  name: 'LONG_WHITE'
-}
-
-item {
-  id: 8
-  name: 'ONEIROPHANTA_MUTABILIS_COMPLEX'
-}
-
-item {
-  id: 9
+  id: 4
   name: 'PENIAGONE_SP_A'
 }
 
 item {
-  id: 10
+  id: 5
   name: 'PENIAGONE_SP_1'
 }
 
 item {
-  id: 11
-  name: 'PENIAGONE_SP_2'
-}
-
-item {
-  id: 12
+  id: 6
   name: 'PENIAGONE_PAPILLATA'
 }
 
 item {
-  id: 13
+  id: 7
   name: 'PENIAGONE_VITRAE'
 }
 
 item {
-  id: 14
+  id: 8
   name: 'SCOTOPLANES_GLOBOSA'
-}
-
-item {
-  id: 15
-  name: 'SYNALLACTIDAE'
-}
-
-item {
-  id: 16
-  name: 'TJALFIELLA'
 }
