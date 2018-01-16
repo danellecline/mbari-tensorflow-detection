@@ -76,6 +76,16 @@ Insert the correct paths for the training/test data in PATH_TO_BE_CONFIGURED
     --checkpoint_dir=`pwd`/models/checkpoints/ \
     --eval_dir=PATH_TO_EVAL_DIR
 
+## View results on the model with tensorboard in a docker container
+```bash
+# Build container with
+docker build -t tensorboard -f Dockerfile.tensorboard .
+
+# Run with
+docker run -p 6006:6006 -v `pwd`:/models tensorboard
+
+# and open web browser to http://localhost:6006 to view model output
+```
 ## Bug fix
 add to tensorflow_models/object_detection/core/preprocessor.py 
 mean = list(mean) before lines 1474.
