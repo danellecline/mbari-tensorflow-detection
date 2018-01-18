@@ -4,7 +4,7 @@ import io
 import os
 import logging
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/research'))
 
 from lxml import etree
 import tensorflow as tf
