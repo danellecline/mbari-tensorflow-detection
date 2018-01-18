@@ -78,7 +78,6 @@ def dict_to_tf_example(data,
   image = Image.open(encoded_png_io)
   if image.format != 'PNG':
     raise ValueError('Image format not PNG')
-  key = hashlib.sha256(encoded_png).hexdigest()
 
   width = int(data['size']['width'])
   height = int(data['size']['height'])
@@ -89,25 +88,18 @@ def dict_to_tf_example(data,
   ymax = []
   classes = []
   classes_text = []
-  truncated = []
-  poses = []
-  difficult_obj = []
   num_objs = 0
 
   for obj in data['object']:
     if labels and obj['name'] not in labels:
         continue
     num_objs += 1
-    difficult = bool(int(obj['difficult']))
-    difficult_obj.append(int(difficult))
     xmin.append(float(obj['bndbox']['xmin']) / width)
     ymin.append(float(obj['bndbox']['ymin']) / height)
     xmax.append(float(obj['bndbox']['xmax']) / width)
     ymax.append(float(obj['bndbox']['ymax']) / height)
     classes_text.append(obj['name'].encode('utf8'))
     classes.append(label_map_dict[obj['name']])
-    truncated.append(int(obj['truncated']))
-    poses.append(obj['pose'].encode('utf8'))
 
   example = tf.train.Example(features=tf.train.Features(feature={
       'image/height': dataset_util.int64_feature(height),
@@ -116,7 +108,6 @@ def dict_to_tf_example(data,
           data['filename'].encode('utf8')),
       'image/source_id': dataset_util.bytes_feature(
           data['filename'].encode('utf8')),
-      'image/key/sha256': dataset_util.bytes_feature(key.encode('utf8')),
       'image/encoded': dataset_util.bytes_feature(encoded_png),
       'image/format': dataset_util.bytes_feature('png'.encode('utf8')),
       'image/object/bbox/xmin': dataset_util.float_list_feature(xmin),
@@ -125,8 +116,6 @@ def dict_to_tf_example(data,
       'image/object/bbox/ymax': dataset_util.float_list_feature(ymax),
       'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
       'image/object/class/label': dataset_util.int64_list_feature(classes),
-      'image/object/truncated': dataset_util.int64_list_feature(truncated),
-      'image/object/view': dataset_util.bytes_list_feature(poses),
   }))
   return example, num_objs
 
