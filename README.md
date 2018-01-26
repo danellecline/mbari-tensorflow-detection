@@ -109,3 +109,4 @@ A placeholder for notes that might be useful for developers
   os.environ["CUDA_VISIBLE_DEVICES"] = "0" or "1" # to use first or second GPU
 * How to see more boxes in Tensorboard [https://stackoverflow.com/questions/45452376/small-object-detection-with-faster-rcnn-in-tensorflow-models](https://stackoverflow.com/questions/45452376/small-object-detection-with-faster-rcnn-in-tensorflow-models)
 * Good overview article on the different detection methods [https://medium.com/towards-data-science/deep-learning-for-object-detection-a-comprehensive-review-73930816d8d9](https://medium.com/towards-data-science/deep-learning-for-object-detection-a-comprehensive-review-73930816d8d9) 
+* If you move the model output, the path to the checkpoints is hardcoded in the checkpoint file. Replaced with handy sed, e.g.  find ./models -name checkpoint -exec sed -i 's#/home/dcline-admin/Dropbox/GitHub#/raid/dcline-admin#g' {} \;
