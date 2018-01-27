@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Training command for executing on our DevBox
+# Training command for executing on a DevBox
 # Execute training with run_train_devbox.sh <model dir name> <test|train> <gpu device #>
 # e.g. run.sh faster_rcnn_resnet50_coco test 0
 # This will train model faster_rcnn_resnet50_coco on GPU device 0

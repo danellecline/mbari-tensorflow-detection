@@ -92,6 +92,7 @@ def dict_to_tf_example(data,
 
   for obj in data['object']:
     if labels and obj['name'] not in labels:
+        print('{0} not in {1} so excluding from record'.format(obj['name'], labels))
         continue
     num_objs += 1
     xmin.append(float(obj['bndbox']['xmin']) / width)

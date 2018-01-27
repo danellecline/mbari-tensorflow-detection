@@ -68,15 +68,11 @@ def dict_to_tf_example(data,
   ymax = []
   classes = []
   classes_text = []
-  truncated = []
-  poses = []
-  difficult_obj = []
   for obj in data['object']:
-    difficult = bool(int(obj['difficult']))
-    if ignore_difficult_instances and difficult:
+    class_name = obj['name']
+    if class_name not in label_map_dict.keys():
+      print('{0} not in keys {1} so excluding from record'.format(class_name, label_map_dict.keys()))
       continue
-
-    difficult_obj.append(int(difficult))
 
     xmin.append(float(obj['bndbox']['xmin']) / width)
     ymin.append(float(obj['bndbox']['ymin']) / height)
@@ -84,8 +80,6 @@ def dict_to_tf_example(data,
     ymax.append(float(obj['bndbox']['ymax']) / height)
     classes_text.append(obj['name'].encode('utf8'))
     classes.append(label_map_dict[obj['name']])
-    truncated.append(int(obj['truncated']))
-    poses.append(obj['pose'].encode('utf8'))
 
   example = tf.train.Example(features=tf.train.Features(feature={
       'image/height': dataset_util.int64_feature(height),
@@ -103,16 +97,11 @@ def dict_to_tf_example(data,
       'image/object/bbox/ymax': dataset_util.float_list_feature(ymax),
       'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
       'image/object/class/label': dataset_util.int64_list_feature(classes),
-      'image/object/difficult': dataset_util.int64_list_feature(difficult_obj),
-      'image/object/truncated': dataset_util.int64_list_feature(truncated),
-      'image/object/view': dataset_util.bytes_list_feature(poses),
   }))
   return example
 
 
 def main(_):
-
-    data_dir = FLAGS.data_dir
 
     writer = tf.python_io.TFRecordWriter(FLAGS.output_path)
 

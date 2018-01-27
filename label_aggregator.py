@@ -33,7 +33,7 @@ class LabelAggregator():
         annotate_dir = os.path.join(self.output_dir, conf.COLLECTION_NAME, conf.ANNOTATION_DIR)
         image_dir = os.path.join(self.output_dir, conf.COLLECTION_NAME, conf.PNG_DIR)
         self.check_dir(annotate_dir)
-        self.check_dir(image_dir) 
+        self.check_dir(image_dir)
 
         with open(os.path.join(self.output_dir, conf.COLLECTION_NAME, self.file_listing), 'w') as fid:
 
@@ -60,6 +60,19 @@ class LabelAggregator():
                         d = soup.find('path')
                         d.extract()
 
+                        # image size
+                        image_height = int(soup.height.text)
+                        image_width = int(soup.width.text)
+
+                        scale_x = conf.TARGET_WIDTH/image_width
+                        scale_y = conf.TARGET_HEIGHT/image_height
+
+                        # rescale the annotations to the target image size
+                        self.replace_tag(soup.xmax, scale_x)
+                        self.replace_tag(soup.xmin, scale_x)
+                        self.replace_tag(soup.ymax, scale_y)
+                        self.replace_tag(soup.ymin, scale_y)
+
                         file_root = os.path.basename(xml_in)
                         file, ext = os.path.splitext(file_root)
 
@@ -74,6 +87,8 @@ class LabelAggregator():
                         fid.write(file_root + '\n')
                         
                         xml_out = os.path.join(annotate_dir, file + ext)
+                        if os.path.exists(xml_out):
+                            continue
                         f = open('tmp.xml', "w")
                         f.write(soup.decode_contents())
                         f.close()
@@ -87,16 +102,24 @@ class LabelAggregator():
                             f2.write(pretty_xml_as_string)
                         f2.close()
 
-                        # copy the source image to the correct spot
+                        #  rescale to the model size and copy the source image to the correct spot and
                         src = os.path.join(path, 'imgs', image_name)
                         dst = os.path.join(image_dir, image_name)
-                        shutil.copyfile(src, dst)
-                        
+
+                        cmd = '/usr/local/bin/convert {0} -scale {1}x{2}\! "{3}"'.format(src,
+                                                                                         conf.TARGET_WIDTH,
+                                                                                         conf.TARGET_HEIGHT,
+                                                                                         dst)
+                        print('Executing {0}'.format(cmd))
+                        os.system(cmd)
                         soup.clear()
 
         fid.close()
- 
- 
+
+    def replace_tag(self, tag,  scale):
+        num = int(int(tag.text) * scale)
+        tag.string = '{0}'.format(num)
+
     def check_dir(self, path):
         """
         Simply utility to check directory and if it doesn't exist make it and all its parent directories
