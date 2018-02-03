@@ -2,9 +2,9 @@
 
 
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
---collection  MBARI_BENTHIC_2017 \
---output_path MBARI_BENTHIC_2017_train_subset.record \
+/Volumes/DeepLearningTests/training_data_to_export/ \
+--collection  MBARI_BENTHIC_2017_300 \
+--output_path MBARI_BENTHIC_2017_300_train_subset.record \
 --label_map_path mbari_benthic_label_subset_map.pbtxt \
 --set train \
 --labels \
@@ -14,9 +14,9 @@ PENIAGONE_SP_A \
 SCOTOPLANES_GLOBOSA \
 
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
---collection  MBARI_BENTHIC_2017 \
---output_path MBARI_BENTHIC_2017_test_subset.record \
+/Volumes/DeepLearningTests/training_data_to_export/ \
+--collection  MBARI_BENTHIC_2017_300 \
+--output_path MBARI_BENTHIC_2017_300_test_subset.record \
 --label_map_path mbari_benthic_label_subset_map.pbtxt \
 --set test \
 --labels \
