@@ -44,6 +44,7 @@ def process_command_line():
                                    description='Creates Tensorflow Record object for MBARI annotated data',
                                    epilog=examples)
   parser.add_argument('-m', '--model_dir', action='store', help='Root directory to raw dataset', required=False, default='{0}/models'.format(os.getcwd()))
+  parser.add_argument('-t', '--title', action='store', help='Title for plot', required=False, default='Foobar')
   args = parser.parse_args()
   return args
 
@@ -163,8 +164,7 @@ def main(_):
   with plt.style.context('ggplot'):
 
     # start a new figure - size is in inches
-    #fig = plt.figure(figsize=(8, 10), dpi=400)
-    fig = plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(8, 4), dpi=200)
     ax1 = plt.subplot(aspect='equal')
     ax1.set_xlim(0, 300)
     ax1.set_ylim(0, 100)
@@ -179,18 +179,18 @@ def main(_):
     ax1.set_title('Foobar', fontstyle='italic')
 
     # plot the legend outside the plot in the upper left corner
-    l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 1), prop={'size': 8}, scatterpoints=1)
+    l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 0.95), prop={'size': 8}, scatterpoints=1, title='Architecture')
+    l.get_title().set_fontsize('8')
     l.set_zorder(4)  # put the legend on top right
-
     inc = 20
     '''ax1.text(170, 50, r'Resolution', fontsize=8)
     for feature, color in fe_colors.items():
-      ax1.text(170, inc - 2, r'{0}'.format(feature), fontsize=8)
+      ax1.text(170, inc - 2, r'{0}'.format(feature), fo ntsize=8)
       c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
       ax1.add_patch(c)
       inc += 10'''
 
-    ax1.text(170, 50, r'Resolution', fontsize=8)
+    ax1.text(160, 50, r'Resolution', fontsize=8)
     for size, color in sz_colors.items():
       ax1.text(170, inc - 2, r'{0}'.format(size), fontsize=8)
       c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
@@ -200,6 +200,7 @@ def main(_):
     #patches = [ mpatches.Patch(color=color, label=label)
     #  for label, color in zip(fe_labels, fe_colors)]
     #fig.legend(patches, fe_labels, loc='center', frameon=False)
+    plt.savefig('{0}.png'.format(args.title), format='png')
     plt.show()
   #pivoted.plot(kind='bar', alpha=0.75, rot=45, figsize=(500, 500), width=.5)
   print('Done')
