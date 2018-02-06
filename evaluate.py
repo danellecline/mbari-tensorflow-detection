@@ -1,9 +1,7 @@
-import hashlib
-import conf
+from pylab import *
 import glob
-import io
 import os
-import logging
+import matplotlib.patches as mpatches
 import sys
 import shutil
 import pandas as pd
@@ -23,16 +21,12 @@ plt.rcParams['figure.titlesize'] = 12
 sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/research'))
 
 import tensorflow as tf
-
-from object_detection.utils import dataset_util
-from object_detection.utils import label_map_util
-
 from collections import namedtuple
 
-model_metadata = namedtuple("model_metadata", ["meta_arch", "feature_extractor", "proposals", "dir", "name"])
+model_metadata = namedtuple("model_metadata", ["meta_arch", "feature_extractor", "proposals", "dir", "name", "resolution"])
 arch_markers = {'Faster RCNN': 'o', 'SSD':'D'}
-fe_colors = {'Resnet 101':'G', 'Inception V2':'R'}
-fe_labels = ['Resnet 101', 'Inception V2']
+fe_colors = {'Resnet 101':'Y', 'Inception V2':'B'}
+sz_colors = {'950x540':'G', '300':'R', '600':'Y'}
 arch_labels = []
 
 def process_command_line():
@@ -50,6 +44,7 @@ def process_command_line():
                                    description='Creates Tensorflow Record object for MBARI annotated data',
                                    epilog=examples)
   parser.add_argument('-m', '--model_dir', action='store', help='Root directory to raw dataset', required=False, default='{0}/models'.format(os.getcwd()))
+  parser.add_argument('-t', '--title', action='store', help='Title for plot', required=False, default='Foobar')
   args = parser.parse_args()
   return args
 
@@ -116,6 +111,8 @@ def main(_):
       ma = 'SSD'
     if 'faster_rcnn' in d:
       ma = 'Faster RCNN'
+
+    resolution = '960x540'
     proposals = 0
     dir_name = d.split('eval')[0]
     model_name = dir_name.split('/')[-2]
@@ -123,6 +120,7 @@ def main(_):
     for j in f:
       if j.isnumeric():
         proposals = int(j)
+      #TODO add regex for resolution here
 
     # Grab all of the accuracy results for each model and put into Pandas dataframe
     event_acc = EventAccumulator(d)
@@ -135,7 +133,7 @@ def main(_):
       if df.empty:
         continue
 
-      a = model_metadata(dir=d, name=model_name, meta_arch=ma, feature_extractor=fc, proposals=proposals)
+      a = model_metadata(dir=d, name=model_name, meta_arch=ma, feature_extractor=fc, proposals=proposals, resolution=resolution)
       all_models.append(a)
 
       time_start = df.wall_time[0]
@@ -166,9 +164,10 @@ def main(_):
   with plt.style.context('ggplot'):
 
     # start a new figure - size is in inches
-    #fig = plt.figure(figsize=(8, 10), dpi=400)
-    fig = plt.figure(figsize=(4, 4))
-    ax1 = plt.subplot(111)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax1 = plt.subplot(aspect='equal')
+    ax1.set_xlim(0, 300)
+    ax1.set_ylim(0, 100)
 
     for model in all_models:
       model_plot(all_model_index, model, ax1)
@@ -179,39 +178,34 @@ def main(_):
     ax1.set_xlabel('GPU Time', fontsize=10)
     ax1.set_title('Foobar', fontstyle='italic')
 
-    # ax.tick_params(axis='both', which='major', labelsize=8)
-    # ax.tick_params(axis='both', which='minor', labelsize=8)
-    # cs = ax.scatter(x, y, c=z, s=20, marker='.', vmin=zmin, vmax=zmax, lw=0, alpha=1.0, cmap=self.cm_jetplus)
+    # plot the legend outside the plot in the upper left corner
+    l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 0.95), prop={'size': 8}, scatterpoints=1, title='Architecture')
+    l.get_title().set_fontsize('8')
+    l.set_zorder(4)  # put the legend on top right
+    inc = 20
+    '''ax1.text(170, 50, r'Resolution', fontsize=8)
+    for feature, color in fe_colors.items():
+      ax1.text(170, inc - 2, r'{0}'.format(feature), fo ntsize=8)
+      c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
+      ax1.add_patch(c)
+      inc += 10'''
 
-    #plt.legend(models)
+    ax1.text(160, 50, r'Resolution', fontsize=8)
+    for size, color in sz_colors.items():
+      ax1.text(170, inc - 2, r'{0}'.format(size), fontsize=8)
+      c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
+      ax1.add_patch(c)
+      inc += 10
 
-    #data = all_names_index.loc[sex, name]
-   # plt.plot(pivoted)
-
-  # plot the legend outside the plot in the upper left corner
-  l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 1), prop={'size': 8}, scatterpoints=1)
-  l.set_zorder(4)  # put the legend on top right
-
-  fig = plt.figure(figsize=(2, 1.25))
-  import matplotlib.patches as mpatches
-
-  #fe_colors = {'Resnet 101': 'G', 'Inception V2': 'R'}
-  #fe_labels = ['Resnet 101', 'Inception V2']
-  inc = 50
-  for feature, color in fe_colors.items():
-    c = mpatches.Circle((300, inc), radius=0.5, edgecolor='black', facecolor=color)
-    ax1.add_patch(c)
-    inc += 10
-
-  #patches = [ mpatches.Patch(color=color, label=label)
-  #  for label, color in zip(fe_labels, fe_colors)]
-  #fig.legend(patches, fe_labels, loc='center', frameon=False)
-  plt.show()
+    #patches = [ mpatches.Patch(color=color, label=label)
+    #  for label, color in zip(fe_labels, fe_colors)]
+    #fig.legend(patches, fe_labels, loc='center', frameon=False)
+    plt.savefig('{0}.png'.format(args.title), format='png')
+    plt.show()
   #pivoted.plot(kind='bar', alpha=0.75, rot=45, figsize=(500, 500), width=.5)
   print('Done')
 
-
-    #shutil.rmtree(eval_tempdir.name)
+  #shutil.rmtree(eval_tempdir.name)
   #shutil.rmtree(train_tempdir.name)
 
 if __name__ == '__main__':
