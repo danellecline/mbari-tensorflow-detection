@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+__author__    = 'Danelle Cline'
+__copyright__ = '2016'
+__license__   = 'GPL v3'
+__contact__   = 'dcline at mbari.org'
+__doc__ = '''
+
+Combine all GPU/CPU inference times into a single plot
+@var __date__: Date of last svn commit
+@undocumented: __doc__ parser
+@status: production
+@license: GPL
+'''
+from pylab import *
+import os
+import pandas as pd
+import glob
+import model_metadata as meta
+import matplotlib.pyplot as plt
+plt.style.use('ggplot')
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.size'] = 10
+plt.rcParams['axes.labelsize'] = 10
+plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.titlesize'] = 10
+plt.rcParams['xtick.labelsize'] = 8
+plt.rcParams['ytick.labelsize'] = 8
+plt.rcParams['legend.fontsize'] = 10
+plt.rcParams['figure.titlesize'] = 12
+
+if __name__ == '__main__':
+
+    compute = ['CPU'] #, 'GPU']
+
+    for c in compute:
+      base_dir = os.path.join(os.getcwd(), 'data')
+      all_files = sorted(glob.iglob(base_dir + '/*{0}*.csv'.format(c), recursive=True))
+      df = pd.DataFrame()
+      for f in all_files:
+        data = pd.read_csv(f,index_col=None)
+        model_name = f.split('-')[3]
+        m = meta.ModelMetadata(model_name)
+
+        df = df.append({'Model':m.meta_arch , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
+
+      # start a new figure - size is in inches
+      fig = plt.figure(figsize=(6, 4), dpi=200)
+      ax = plt.subplot()
+      df = df.set_index('Model')
+      df.plot(kind='bar', alpha=0.75, rot=0, legend=False, ax=ax)
+      ax.set_xlabel("")
+      ax.set_ylabel("Seconds", fontsize=10)
+      ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
+      plt.show()
+      fig.savefig(fname='CPU.png')
+      print('Done')

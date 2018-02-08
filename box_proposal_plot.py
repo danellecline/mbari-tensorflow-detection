@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+__author__    = 'Danelle Cline'
+__copyright__ = '2016'
+__license__   = 'GPL v3'
+__contact__   = 'dcline at mbari.org'
+__doc__ = '''
+
+Combine all model data into a single plot
+@var __date__: Date of last svn commit
+@undocumented: __doc__ parser
+@status: production
+@license: GPL
+'''
 from pylab import *
 import glob
 import os
@@ -7,8 +20,9 @@ import shutil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import model_metadata as meta
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
-plt.style.use('seaborn-white')
+plt.style.use('ggplot')
 plt.rcParams['font.family'] = 'serif'
 plt.rcParams['font.size'] = 10
 plt.rcParams['axes.labelsize'] = 10
@@ -21,9 +35,7 @@ plt.rcParams['figure.titlesize'] = 12
 sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/research'))
 
 import tensorflow as tf
-from collections import namedtuple
 
-model_metadata = namedtuple("model_metadata", ["meta_arch", "feature_extractor", "proposals", "dir", "name", "resolution"])
 arch_markers = {'Faster RCNN': 'o', 'SSD':'D'}
 fe_colors = {'Resnet 101':'Y', 'Inception V2':'B'}
 sz_colors = {'950x540':'G', '300':'R', '600':'Y'}
@@ -75,8 +87,6 @@ def model_plot(all_model_index, model, ax):
   label = None
   if model.meta_arch in arch_markers.keys():
     m = arch_markers[model.meta_arch]
-  if model.feature_extractor in fe_colors.keys():
-    c = fe_colors[model.feature_extractor]
   if model.meta_arch not in arch_labels:
     label = model.meta_arch
     arch_labels.append(label)
@@ -101,26 +111,6 @@ def main(_):
   all_models = []
 
   for d in all_dirs:
-    fc = 'Unknown'
-    if 'resnet101' in d:
-      fc = 'Resnet 101'
-    if 'inception_v2' in d:
-      fc = 'Inception v2'
-    ma = 'Unknown'
-    if 'ssd' in d:
-      ma = 'SSD'
-    if 'faster_rcnn' in d:
-      ma = 'Faster RCNN'
-
-    resolution = '960x540'
-    proposals = 0
-    dir_name = d.split('eval')[0]
-    model_name = dir_name.split('/')[-2]
-    f = model_name.split('_')
-    for j in f:
-      if j.isnumeric():
-        proposals = int(j)
-      #TODO add regex for resolution here
 
     # Grab all of the accuracy results for each model and put into Pandas dataframe
     event_acc = EventAccumulator(d)
@@ -133,7 +123,10 @@ def main(_):
       if df.empty:
         continue
 
-      a = model_metadata(dir=d, name=model_name, meta_arch=ma, feature_extractor=fc, proposals=proposals, resolution=resolution)
+      dir_name = d.split('eval')[0]
+      model_name = dir_name.split('/')[-2]
+
+      a = meta.ModelMetadata(model_name)
       all_models.append(a)
 
       time_start = df.wall_time[0]
@@ -144,7 +137,7 @@ def main(_):
 
       # rename columns
       df.columns = ['GPU Time', 'step', 'Overall mAP']
-      df['model'] = np.full(len(df), model_name)
+      df['model'] = np.full(len(df), a.name)
       print(df)
       df_eval = df_eval.append(df)
 
@@ -164,7 +157,7 @@ def main(_):
   with plt.style.context('ggplot'):
 
     # start a new figure - size is in inches
-    fig = plt.figure(figsize=(8, 4), dpi=200)
+    fig = plt.figure(figsize=(6, 6), dpi=200)
     ax1 = plt.subplot(aspect='equal')
     ax1.set_xlim(0, 300)
     ax1.set_ylim(0, 100)
@@ -172,10 +165,9 @@ def main(_):
     for model in all_models:
       model_plot(all_model_index, model, ax1)
 
-    #ax1.set_xlim(tmin, tmax)
     ax1.set_ylim([0, 100])
     ax1.set_ylabel('mAP', fontsize=10)
-    ax1.set_xlabel('GPU Time', fontsize=10)
+    ax1.set_xlabel('Box Proposals', fontsize=10)
     ax1.set_title(args.title, fontstyle='italic')
 
     # plot the legend outside the plot in the upper left corner
