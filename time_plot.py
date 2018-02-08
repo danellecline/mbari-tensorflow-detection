@@ -33,7 +33,7 @@ plt.rcParams['figure.titlesize'] = 12
 
 if __name__ == '__main__':
 
-    compute = ['CPU'] #, 'GPU']
+    compute = ['CPU', 'GPU']
 
     for c in compute:
       base_dir = os.path.join(os.getcwd(), 'data')
@@ -44,7 +44,8 @@ if __name__ == '__main__':
         d = os.path.basename(f)
         model_name = d.split('-')[1]
         m = meta.ModelMetadata(model_name)
-
+        if data.empty:
+          continue
         df = df.append({'Model':m.meta_arch , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
 
       # start a new figure - size is in inches
@@ -56,5 +57,5 @@ if __name__ == '__main__':
       ax.set_ylabel("Seconds", fontsize=10)
       ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
       plt.show()
-      fig.savefig(fname='CPU.png')
+      fig.savefig(fname='{0}_time_plot.png'.format(c))
       print('Done')
