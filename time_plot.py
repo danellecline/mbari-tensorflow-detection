@@ -11,6 +11,9 @@ Combine all GPU/CPU inference times into a single plot
 @status: production
 @license: GPL
 '''
+
+import matplotlib
+matplotlib.use('Agg')
 from pylab import *
 import os
 import pandas as pd
@@ -38,7 +41,8 @@ if __name__ == '__main__':
       df = pd.DataFrame()
       for f in all_files:
         data = pd.read_csv(f,index_col=None)
-        model_name = f.split('-')[3]
+        d = os.path.basename(f)
+        model_name = d.split('-')[1]
         m = meta.ModelMetadata(model_name)
 
         df = df.append({'Model':m.meta_arch , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
