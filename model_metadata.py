@@ -43,4 +43,4 @@ class ModelMetadata():
 
       # TODO add regex for resolution here
 
-    print('Model architecture {0} feature extractor {1} proposals {2} '.format(self.meta_arch, self.feature_arch, self.proposals))
+    print('Model architecture {0} feature extractor {1} proposals {2} image resolution {3}'.format(self.meta_arch, self.feature_arch, self.proposals, self.image_resolution))

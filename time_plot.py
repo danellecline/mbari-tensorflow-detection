@@ -49,19 +49,19 @@ if __name__ == '__main__':
           continue
         if m.proposals > 0:
             model_description = '{0}\n{1} Box Proposals'.format(m.meta_arch, m.proposals)
-        if m.image_resolution > 0 and m.meta_arch == 'SSD':
+        elif m.image_resolution > 0 and m.meta_arch == 'SSD':
             model_description = '{0}\n{1} Image Resolution'.format(m.meta_arch, m.image_resolution)
         else:
           model_description = m.meta_arch
         df = df.append({'Model':model_description , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
 
       # start a new figure - size is in inches
-      fig = plt.figure(figsize=(8, 6), dpi=200)
+      fig = plt.figure(figsize=(8, 8), dpi=200)
       ax = plt.subplot()
       df = df.set_index('Model')
       df.plot(kind='bar', alpha=0.75, rot=30, legend=False, ax=ax, color=custom_colors)
       ax.set_xlabel("")
-      ax.set_ylabel("Seconds", fontsize=10)
+      ax.set_ylabel("Milliseconds", fontsize=10)
       ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
       plt.show()
       fig.savefig(fname='{0}_time_plot.png'.format(c))
