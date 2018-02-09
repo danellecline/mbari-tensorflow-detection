@@ -39,29 +39,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/resea
 
 import tensorflow as tf
 
-arch_markers = {'Faster RCNN': 'o', 'SSD':'D'}
+arch_markers = {'Faster RCNN': 'o', 'SSD':'D', 'R-FCN': '*'}
 fe_colors = {'Resnet 101':'Y', 'Inception V2':'B'}
 sz_colors = {'950x540':'G', '300':'R', '600':'Y'}
-arch_labels = []
-
-def process_command_line():
-  '''
-  Process command line
-  :return: args object
-  '''
-  import argparse
-  from argparse import RawTextHelpFormatter
-
-  examples = 'Examples:' + '\n\n'
-  examples += 'Extract and plot performance metrics from model output \n'
-  examples += '{0} --model_dir {0}/models'.format(os.getcwd())
-  parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter,
-                                   description='Creates Tensorflow Record object for MBARI annotated data',
-                                   epilog=examples)
-  parser.add_argument('-m', '--model_dir', action='store', help='Root directory to raw dataset', required=False, default='{0}/models'.format(os.getcwd()))
-  parser.add_argument('-t', '--title', action='store', help='Title for plot', required=False, default='Foobar')
-  args = parser.parse_args()
-  return args
 
 def aggregate(search_path, tempdir):
   all_files = glob.glob(search_path, recursive=True)
@@ -77,38 +57,21 @@ def wallToGPUTime(x, zero_time):
 def valueTomAP(x):
   return round(int(x*100),0)
 
-def modelToMetaArch(x):
-  if 'faster_rcnn' in x:
-    return 'faster_rcnn'
-  return 'Unknown'
-
-
 def model_plot(all_model_index, model, ax):
   data = all_model_index.loc[model.name]
   m = '.'
   c = 'B'
-  label = None
   if model.meta_arch in arch_markers.keys():
     m = arch_markers[model.meta_arch]
-  if model.meta_arch not in arch_labels:
-    label = model.meta_arch
-    arch_labels.append(label)
-  ax.scatter(data.index, data.values, marker=m, color=c, s=40, label=label)
+  if model.image_resolution in sz_colors.keys():
+    c = sz_colors[model.image_resolution]
+
+  ax.scatter(data.index, data.values, marker=m, color=c, s=40, label=model.meta_arch)
 
 
 def main(_):
-  args = process_command_line()
-  import tempfile
-  import shutil
 
-  output = os.getcwd()
-  #train_tempdir = tempfile.TemporaryDirectory()
-  #eval_tempdir = tempfile.TemporaryDirectory()
-
-  #aggregate(args.model_dir + '/**/train/events*', train_tempdir.name)
-  #aggregate(args.model_dir + '/**/eval/events*', eval_tempdir.name)
-
-  search_path = args.model_dir + '/**/eval/'
+  search_path = os.path.join(os.getcwd(), 'data') + '/**/eval/'
   all_dirs = glob.glob(search_path, recursive=True)
   df_eval = pd.DataFrame()
   all_models = []
@@ -151,10 +114,7 @@ def main(_):
 
   # drop the step column as it's no longer needed
   df_eval = df_eval.drop(['step'], axis=1)
-  # pivot on the same and plot the accuracy per each model
-  #pivoted = df_eval.pivot(index=None, columns='model')
 
-  #group = df_eval.groupby(['model'])
   all_model_index = df_eval.set_index(['model','GPU Time']).sort_index()
 
   with plt.style.context('ggplot'):
@@ -170,8 +130,8 @@ def main(_):
 
     ax1.set_ylim([0, 100])
     ax1.set_ylabel('mAP', fontsize=10)
-    ax1.set_xlabel('Box Proposals', fontsize=10)
-    ax1.set_title(args.title, fontstyle='italic')
+    ax1.set_xlabel('GPU Time (seconds)', fontsize=10)
+    ax1.set_title('Mean Average Precision per Model', fontstyle='italic')
 
     # plot the legend outside the plot in the upper left corner
     l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 0.95), prop={'size': 8}, scatterpoints=1, title='Architecture')
@@ -192,16 +152,10 @@ def main(_):
       ax1.add_patch(c)
       inc += 10
 
-    #patches = [ mpatches.Patch(color=color, label=label)
-    #  for label, color in zip(fe_labels, fe_colors)]
-    #fig.legend(patches, fe_labels, loc='center', frameon=False)
-    plt.savefig('{0}.png'.format(args.title), format='png')
+    plt.savefig('mAP.png', format='png')
     plt.show()
-  #pivoted.plot(kind='bar', alpha=0.75, rot=45, figsize=(500, 500), width=.5)
-  print('Done')
 
-  #shutil.rmtree(eval_tempdir.name)
-  #shutil.rmtree(train_tempdir.name)
+  print('Done creating mAP.png')
 
 if __name__ == '__main__':
   tf.app.run()

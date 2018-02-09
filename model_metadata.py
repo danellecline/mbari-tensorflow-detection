@@ -9,8 +9,8 @@ class ModelMetadata():
      """
   meta_arch = 'Unknown'
   feature_arch = 'Unknown'
-  proposal = 0
-  image_resolution = 0
+  proposal = '0'
+  image_resolution = '950x540'
   name = 'None'
 
   def __init__(self, model_name):
@@ -37,9 +37,9 @@ class ModelMetadata():
     for j in f:
       if j.isnumeric():
         if self.meta_arch != 'SSD':
-          self.proposals = int(j)
+          self.proposals = j
         else:
-          self.image_resolution = int(j)
+          self.image_resolution = j
 
       # TODO add regex for resolution here
 
