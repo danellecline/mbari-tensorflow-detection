@@ -35,7 +35,7 @@ class ModelMetadata():
       self.meta_arch = 'SSD'
     elif 'faster_rcnn' in model_name:
       self.meta_arch = 'Faster RCNN'
-    elif 'rfrn' in model_name:
-      self.meta_arch = 'RFRN'
+    elif 'rfcn' in model_name:
+      self.meta_arch = 'R-FCN'
 
     print('Model architecture {0} feature extractor {1} proposals {2} '.format(self.meta_arch, self.feature_arch, self.proposals))
