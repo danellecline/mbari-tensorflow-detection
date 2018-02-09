@@ -34,6 +34,7 @@ plt.rcParams['figure.titlesize'] = 12
 if __name__ == '__main__':
 
     compute = ['CPU', 'GPU']
+    custom_colors = list(['b'])
 
     for c in compute:
       base_dir = os.path.join(os.getcwd(), 'data')
@@ -52,7 +53,7 @@ if __name__ == '__main__':
       fig = plt.figure(figsize=(6, 4), dpi=200)
       ax = plt.subplot()
       df = df.set_index('Model')
-      df.plot(kind='bar', alpha=0.75, rot=0, legend=False, ax=ax)
+      df.plot(kind='bar', alpha=0.75, rot=0, legend=False, ax=ax, color=custom_colors)
       ax.set_xlabel("")
       ax.set_ylabel("Seconds", fontsize=10)
       ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
