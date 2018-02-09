@@ -33,12 +33,12 @@ plt.rcParams['figure.titlesize'] = 12
 
 if __name__ == '__main__':
 
-    compute = ['CPU', 'GPU']
+    compute = ['GPU'] #['CPU', 'GPU']
     custom_colors = list(['b'])
 
     for c in compute:
       base_dir = os.path.join(os.getcwd(), 'data')
-      all_files = sorted(glob.iglob(base_dir + '/*{0}*.csv'.format(c), recursive=True))
+      all_files = sorted(glob.iglob(base_dir + '/**/*{0}*.csv'.format(c), recursive=True))
       df = pd.DataFrame()
       for f in all_files:
         data = pd.read_csv(f,index_col=None)
@@ -50,10 +50,10 @@ if __name__ == '__main__':
         df = df.append({'Model':m.meta_arch , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
 
       # start a new figure - size is in inches
-      fig = plt.figure(figsize=(6, 4), dpi=200)
+      fig = plt.figure(figsize=(8, 6), dpi=200)
       ax = plt.subplot()
       df = df.set_index('Model')
-      df.plot(kind='bar', alpha=0.75, rot=0, legend=False, ax=ax, color=custom_colors)
+      df.plot(kind='bar', alpha=0.75, rot=30, legend=False, ax=ax, color=custom_colors)
       ax.set_xlabel("")
       ax.set_ylabel("Seconds", fontsize=10)
       ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
