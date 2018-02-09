@@ -47,7 +47,13 @@ if __name__ == '__main__':
         m = meta.ModelMetadata(model_name)
         if data.empty:
           continue
-        df = df.append({'Model':m.meta_arch , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
+        if m.proposals > 0:
+            model_description = '{0}\n{1} Box Proposals'.format(m.meta_arch, m.proposals)
+        if m.image_resolution > 0 and m.meta_arch == 'SSD':
+            model_description = '{0}\n{1} Image Resolution'.format(m.meta_arch, m.image_resolution)
+        else:
+          model_description = m.meta_arch
+        df = df.append({'Model':model_description , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
 
       # start a new figure - size is in inches
       fig = plt.figure(figsize=(8, 6), dpi=200)
