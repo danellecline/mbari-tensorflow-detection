@@ -2,6 +2,7 @@
 set -x
 function tmux_start_train { tmux new-window -d  -n "train:GPU$1" "${*:2}; exec bash"; }
 function tmux_start_test { tmux new-window -d  -n "test:GPU$1" "${*:2}; exec bash"; }
+function tmux_start_export { tmux new-window -d  -n "export:GPU$1" "${*:2}; exec bash"; }
 
 models=(
 ["0"]="faster_rcnn_resnet101_coco_300_smallanchor" \
@@ -21,18 +22,17 @@ for i in $(seq 0 2 $(($NUM_MODELS-1))); do
 tmux new-session -d -s "train"
   tmux_start_train 0 ./run.sh ${models[i]} train 0
   tmux_start_train 1 ./run.sh ${models[i + 1]} train 1
-
 tmux new-session -d -s "test"
   tmux_start_test 2 ./run.sh ${models[i]} test 2
   tmux_start_test 3 ./run.sh ${models[i + 1]} test 3
 sleep 2h
 tmux kill-session -t train
 tmux kill-session -t test
-./export_graph.sh ${models[i]}
-./export_graph.sh ${models[i + 1]}
-tmux new-session -d -s "inference"
-  tmux_start_test 2 ./run_inference.sh MBARI_BENTHIC_2017_small.record ${models[i]} test 0
-  tmux_start_test 3 ./run_inference.sh ${models[i + 1]} test 1
-sleep 2m
-tmux kill-session -t inference
+tmux new-session -d -s "export"
+  tmux_start_export 0 ./export_graph.sh ${models[i]} 0
+  tmux_start_export 1 ./export_graph.sh ${models[i + 1]} 1
+  tmux_start_export 2 ./export_graph.sh ${models[i + 2]} 2
+  tmux_start_export 3 ./export_graph.sh ${models[i + 3]} 3
+sleep 1m
+tmux kill-session -t export 
 done
