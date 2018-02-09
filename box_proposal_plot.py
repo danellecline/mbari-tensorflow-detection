@@ -11,6 +11,9 @@ Combine all model data into a single plot
 @status: production
 @license: GPL
 '''
+
+import matplotlib
+matplotlib.use('Agg')
 from pylab import *
 import glob
 import os
