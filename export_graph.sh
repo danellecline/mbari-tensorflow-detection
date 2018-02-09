@@ -16,7 +16,7 @@ if [ -d "$OUT_DIR" ]; then
   rm -Rf $OUT_DIR
 fi
 mkdir -p $OUT_DIR 
-last_checkpoint="$(find $IN_DIR -name '*ckpt*' | sort | tail -n 1)"
+last_checkpoint="$(find $IN_DIR -name '*ckpt*' | sort | head -n 1)"
 string2="$(cut -d- -f2 <<< $last_checkpoint)"
 prefix="$(cut -d. -f1 <<< $string2)"
 
