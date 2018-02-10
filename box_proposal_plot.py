@@ -120,7 +120,7 @@ def main(_):
   with plt.style.context('ggplot'):
 
     # start a new figure - size is in inches
-    fig = plt.figure(figsize=(6, 6), dpi=200)
+    fig = plt.figure(figsize=(6, 4), dpi=400)
     ax1 = plt.subplot(aspect='equal')
     ax1.set_xlim(0, 300)
     ax1.set_ylim(0, 100)
@@ -139,13 +139,13 @@ def main(_):
       names.append(name)
       markers.append(s)
     ax1.legend(markers, names)
-    inc = 20
-    ax1.text(200, 50, r'Resolution', fontsize=8)
+    inc = 30
+    ax1.text(200, 35, r'Resolution', fontsize=8)
     for size, color in sz_colors.items():
-      ax1.text(190, inc - 2, r'{0}'.format(size), fontsize=8)
-      c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
+      ax1.text(220, inc - 2, r'{0}'.format(size), fontsize=8)
+      c = mpatches.Circle( (200, inc), 2, edgecolor='black', facecolor=color)
       ax1.add_patch(c)
-      inc += 10
+      inc -= 10
 
     plt.savefig('mAP.png', format='png')
     plt.show()
