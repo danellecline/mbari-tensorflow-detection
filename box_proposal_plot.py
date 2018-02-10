@@ -60,7 +60,7 @@ def valueTomAP(x):
 def model_plot(all_model_index, model, ax):
   data = all_model_index.loc[model.name]
   m = '.'
-  c = 'B'
+  c = 'grey'
   if model.meta_arch in arch_markers.keys():
     m = arch_markers[model.meta_arch]
   if model.image_resolution in sz_colors.keys():
@@ -132,22 +132,17 @@ def main(_):
     ax1.set_ylabel('mAP', fontsize=10)
     ax1.set_xlabel('GPU Time (seconds)', fontsize=10)
     ax1.set_title('Mean Average Precision per Model', fontstyle='italic')
-
-    # plot the legend outside the plot in the upper left corner
-    l = ax1.legend(loc='upper left', bbox_to_anchor=(0.5, 0.95), prop={'size': 8}, scatterpoints=1, title='Architecture')
-    l.get_title().set_fontsize('8')
-    l.set_zorder(4)  # put the legend on top right
+    markers = []
+    names = []
+    for name, marker in arch_markers.items():
+      s = plt.Line2D((0, 1), (0, 0), color='grey', marker=marker, linestyle='')
+      names.append(name)
+      markers.append(s)
+    ax1.legend(markers, names)
     inc = 20
-    '''ax1.text(170, 50, r'Resolution', fontsize=8)
-    for feature, color in fe_colors.items():
-      ax1.text(170, inc - 2, r'{0}'.format(feature), fo ntsize=8)
-      c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
-      ax1.add_patch(c)
-      inc += 10'''
-
-    ax1.text(160, 50, r'Resolution', fontsize=8)
+    ax1.text(200, 50, r'Resolution', fontsize=8)
     for size, color in sz_colors.items():
-      ax1.text(170, inc - 2, r'{0}'.format(size), fontsize=8)
+      ax1.text(190, inc - 2, r'{0}'.format(size), fontsize=8)
       c = mpatches.Circle( (160, inc), 2, edgecolor='black', facecolor=color)
       ax1.add_patch(c)
       inc += 10
