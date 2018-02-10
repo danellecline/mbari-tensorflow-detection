@@ -107,7 +107,7 @@ if __name__ == '__main__':
                                           line_thickness=4)
 
           if not os.path.exists(output_path):
-              os.makedirs(savePath)
+              os.makedirs(output_path)
           fName_=os.path.join(output_path, fname_f)
           cv2.imwrite(fName_ , im_)
 
