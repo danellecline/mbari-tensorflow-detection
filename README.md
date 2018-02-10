@@ -8,6 +8,7 @@ Code for testing Tensorflow detection API on underwater imagery
  https://www.python.org/downloads/mac-osx/ 
 - [Protobuf](https://developers.google.com/protocol-buffers/)
 
+
 ## Running
 
 ### Check-out the code
@@ -31,6 +32,9 @@ Also see [https://www.tensorflow.org/install/install_linux](https://www.tensorfl
 
     $ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.3.0-cp35-cp35m-linux_x86_64.whl 
     $ pip3 install --upgrade tensorflow-gpu==1.3.0
+
+### Install opencv 
+    $ pip3 install opencv-python
     
 ### Install Tensorflow models and object detection protocols
     $ git clone https://github.com/tensorflow/models.git tensorflow_models
