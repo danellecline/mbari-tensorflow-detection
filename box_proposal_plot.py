@@ -71,7 +71,7 @@ def model_plot(all_model_index, model, ax):
 
 def main(_):
 
-  search_path = os.path.join(os.getcwd(), 'data') + '/**/eval/'
+  search_path = os.path.join(os.getcwd(), 'models') + '/**/eval'
   all_dirs = glob.glob(search_path, recursive=True)
   df_eval = pd.DataFrame()
   all_models = []
