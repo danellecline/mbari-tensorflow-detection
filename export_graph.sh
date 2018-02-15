@@ -1,14 +1,16 @@
-#!/usr/bin/env bash
-# Export graph of traing model 
-# usage: export_graph.sh <modelname>
-# e.g. export_graph.sh faster_rcnn_resnet101_coco_20_smallanchor
+#!/bin/env bash
+# Export graph of training model
+# This is needed before running inference on images
+# Finds the latest checkpoint and exports that by default 
+# usage: export_graph.sh <modelname> <GPU>
+# e.g. export_graph.sh faster_rcnn_resnet101_coco_20_smallanchor 0
 set -x
-source ~/Dropbox/GitHub/venv-aesa-tensorflow-detection-devbox/bin/activate
+source $TF_VENV/bin/activate
 pushd tensorflow_models/research
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim:`pwd`/object_detection
 popd
 export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64/
-export CUDA_VISIBLE_DEVICES=""
+export CUDA_VISIBLE_DEVICES="$2"
 
 OUT_DIR=models/export/"$1"
 IN_DIR=models/"$1"/train
