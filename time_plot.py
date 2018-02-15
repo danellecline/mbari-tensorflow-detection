@@ -22,14 +22,7 @@ import model_metadata as meta
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.size'] = 10
-plt.rcParams['axes.labelsize'] = 10
-plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['axes.titlesize'] = 10
-plt.rcParams['xtick.labelsize'] = 8
-plt.rcParams['ytick.labelsize'] = 8
-plt.rcParams['legend.fontsize'] = 10
-plt.rcParams['figure.titlesize'] = 12
+plt.rcParams['font.size'] = 30
 
 if __name__ == '__main__':
 
@@ -47,22 +40,25 @@ if __name__ == '__main__':
         m = meta.ModelMetadata(model_name)
         if data.empty:
           continue
-        if m.proposals > 0:
+        if int(m.proposals) > 0:
             model_description = '{0}\n{1} Box Proposals'.format(m.meta_arch, m.proposals)
-        elif m.image_resolution > 0 and m.meta_arch == 'SSD':
+        elif m.meta_arch == 'SSD':
             model_description = '{0}\n{1} Image Resolution'.format(m.meta_arch, m.image_resolution)
         else:
           model_description = m.meta_arch
         df = df.append({'Model':model_description , '{0} Time'.format(c):int(data.iloc[0]['GPU Time'])}, ignore_index=True)
 
-      # start a new figure - size is in inches
-      fig = plt.figure(figsize=(8, 8), dpi=200)
-      ax = plt.subplot()
-      df = df.set_index('Model')
-      df.plot(kind='bar', alpha=0.75, rot=30, legend=False, ax=ax, color=custom_colors)
-      ax.set_xlabel("")
-      ax.set_ylabel("Milliseconds", fontsize=10)
-      ax.set_title(label='Average {0} Detection Time'.format(c), fontstyle='italic')
-      plt.show()
-      fig.savefig(fname='{0}_time_plot.png'.format(c))
-      print('Done')
+      with plt.style.context('ggplot'):
+
+        # start a new figure - size is in inches
+        fig = plt.figure(figsize=(6, 4), dpi=400)
+        ax = plt.subplot()
+        df = df.set_index('Model')
+        df.plot(kind='bar', sort_columns=True, alpha=0.75, rot=90, legend=False, ax=ax, color=custom_colors)
+        ax.set_xlabel("")
+        ax.set_ylabel("Milliseconds")
+        ax.set_title(label='Average {0} Detection Time'.format(c))
+        plt.show()
+        fname=fname='{0}_time_plot.png'.format(c)
+        fig.savefig(fname=fname, bbox_inches='tight')
+        print('Done creating {0}'.format(fname))

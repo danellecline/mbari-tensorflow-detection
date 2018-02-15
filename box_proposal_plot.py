@@ -27,35 +27,36 @@ import model_metadata as meta
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 plt.style.use('ggplot')
 plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.size'] = 10
-plt.rcParams['axes.labelsize'] = 10
-plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['axes.titlesize'] = 10
-plt.rcParams['xtick.labelsize'] = 8
-plt.rcParams['ytick.labelsize'] = 8
-plt.rcParams['legend.fontsize'] = 10
-plt.rcParams['figure.titlesize'] = 12
+plt.rcParams['font.size'] = 30
 sys.path.append(os.path.join(os.path.dirname(__file__), 'tensorflow_models/research'))
 
 import tensorflow as tf
 
 arch_markers = {'Faster RCNN': 'o', 'SSD':'D', 'R-FCN': '*'}
-fe_colors = {'Resnet 101':'Y', 'Inception V2':'B'}
-sz_colors = {'950x540':'G', '300':'R', '600':'Y'}
+sz_colors = {300:'r', 600:'g'}
+sz_proposals = {300: 'm',100:'k'}
 
-def aggregate(search_path, tempdir):
-  all_files = glob.glob(search_path, recursive=True)
-  for f in all_files:
-    src = f
-    dir, file = os.path.split(src)
-    dst = '{0}/{1}'.format(tempdir, file)
-    shutil.copy(src, dst)
 
 def wallToGPUTime(x, zero_time):
   return round(int((x - zero_time)/60),0)
 
 def valueTomAP(x):
   return round(int(x*100),0)
+
+def smooth(data, smooth_weight):
+  # 1st-order IIR low-pass filter to attenuate the higher-frequency components of the time-series.
+  smooth_data = []
+  last = 0
+  numAccum = 0
+  for nextVal in data:
+    last = last * smooth_weight + (1 - smooth_weight) * nextVal;
+    numAccum+=1
+    debiasWeight = 1
+    if smooth_weight != 1.0:
+          debiasWeight = 1.0 - pow(smooth_weight, numAccum)
+    smoothed = last / debiasWeight
+    smooth_data.append(smoothed)
+  return smooth_data
 
 def model_plot(all_model_index, model, ax):
   data = all_model_index.loc[model.name]
@@ -65,8 +66,15 @@ def model_plot(all_model_index, model, ax):
     m = arch_markers[model.meta_arch]
   if model.image_resolution in sz_colors.keys():
     c = sz_colors[model.image_resolution]
+  if model.proposals in sz_proposals.keys():
+    c = sz_proposals[model.proposals]
 
-  ax.scatter(data.index, data.values, marker=m, color=c, s=40, label=model.meta_arch)
+  ax.scatter(data.index, data.values, marker=m, color=c, s=20, label=model.meta_arch)
+  x = data.index
+  y = data.values
+  smoothing_weight=0.8
+  y_smooth = smooth(data.values, smoothing_weight)
+  ax.plot(x, y_smooth, color=c, label=model.meta_arch)
 
 
 def main(_):
@@ -86,36 +94,32 @@ def main(_):
     try:
       s = event_acc.Scalars('PASCAL/Precision/mAP@0.5IOU')
       df = pd.DataFrame(s)
-      if df.empty:
-        continue
+      if not df.empty:
+      	dir_name = d.split('eval')[0]
+      	model_name = dir_name.split('/')[-2]
+      	a = meta.ModelMetadata(model_name)
+      	all_models.append(a)
+      	time_start = df.wall_time[0]
 
-      dir_name = d.split('eval')[0]
-      model_name = dir_name.split('/')[-2]
+      	# convert wall time and value to rounded values
+      	df['wall_time'] = df['wall_time'].apply(wallToGPUTime, args=(time_start,))
+      	df['value'] = df['value'].apply(valueTomAP)
 
-      a = meta.ModelMetadata(model_name)
-      all_models.append(a)
-
-      time_start = df.wall_time[0]
-
-      # convert wall time and value to rounded values
-      df['wall_time'] = df['wall_time'].apply(wallToGPUTime, args=(time_start,))
-      df['value'] = df['value'].apply(valueTomAP)
-
-      # rename columns
-      df.columns = ['GPU Time', 'step', 'Overall mAP']
-      df['model'] = np.full(len(df), a.name)
-      print(df)
-      df_eval = df_eval.append(df)
-
+      	# rename columns
+      	df.columns = ['GPU Time', 'step', 'Overall mAP']
+      	df['model'] = np.full(len(df), a.name)
+      	df_eval = df_eval.append(df)
 
     except Exception as ex:
       print(ex)
-      continue
 
   # drop the step column as it's no longer needed
   df_eval = df_eval.drop(['step'], axis=1)
+  df_final = df_eval[df_eval['GPU Time'] < 200 ]
+  df_mean = df_eval[(df_eval['GPU Time'] < 200) & (df_eval['GPU Time'] > 50)]
+  print(df_mean.groupby(['model']).mean().sort_values('Overall mAP'))
 
-  all_model_index = df_eval.set_index(['model','GPU Time']).sort_index()
+  all_model_index = df_final.set_index(['model','GPU Time']).sort_index()
 
   with plt.style.context('ggplot'):
 
@@ -129,25 +133,32 @@ def main(_):
       model_plot(all_model_index, model, ax1)
 
     ax1.set_ylim([0, 100])
-    ax1.set_ylabel('mAP', fontsize=10)
-    ax1.set_xlabel('GPU Time (seconds)', fontsize=10)
-    ax1.set_title('Mean Average Precision per Model', fontstyle='italic')
+    ax1.set_ylabel('mAP')
+    ax1.set_xlabel('GPU Time (minutes)')
+    ax1.set_title('Mean Average Precision')
     markers = []
     names = []
     for name, marker in arch_markers.items():
       s = plt.Line2D((0, 1), (0, 0), color='grey', marker=marker, linestyle='')
       names.append(name)
       markers.append(s)
-    ax1.legend(markers, names)
-    inc = 30
-    ax1.text(200, 35, r'Resolution', fontsize=8)
+    ax1.legend(markers, names, loc=0)
+    inc = 40
+    ax1.text(180, 45, r'Resolution', fontsize=8)
     for size, color in sz_colors.items():
-      ax1.text(220, inc - 2, r'{0}'.format(size), fontsize=8)
-      c = mpatches.Circle( (200, inc), 2, edgecolor='black', facecolor=color)
+      ax1.text(190, inc - 2, r'{0}'.format(size), fontsize=8)
+      c = mpatches.Circle( (180, inc), 2, edgecolor='black', facecolor=color)
+      ax1.add_patch(c)
+      inc -= 10
+    inc = 40
+    ax1.text(240, 45, r'Box Proposals', fontsize=8)
+    for size, color in sorted(sz_proposals.items()):
+      ax1.text(250, inc - 2, r'{0}'.format(size), fontsize=8)
+      c = mpatches.Circle( (240, inc), 2, edgecolor='black', facecolor=color)
       ax1.add_patch(c)
       inc -= 10
 
-    plt.savefig('mAP.png', format='png')
+    plt.savefig('mAP.png', format='png', bbox_inches='tight')
     plt.show()
 
   print('Done creating mAP.png')
