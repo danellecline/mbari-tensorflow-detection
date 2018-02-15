@@ -1,6 +1,10 @@
 # mbari-tensorflow-detection
  
-Code for testing Tensorflow detection API on underwater imagery
+Code for testing Tensorflow detection API on MBARI underwater imagery.
+
+Images tested with these models were extracted from video.
+
+[![ Image link ](/img/summary.png)]
 
 ## Prerequisites
  
@@ -51,6 +55,18 @@ This can be done by running the following from tensorflow_models :
     $ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
     $ cd ..
     
+## Download pretrained models
+``` bash
+mkdir -p models/
+cd models
+curl -o faster_rcnn_resnet101_coco_11_08_2017.tar.gz http://download.tensorflow.org/models/object_detection/faster_rcnn_resnet101_coco_2017_11_08.tar.gz 
+curl -o rfcn_resnet101_coco_2018_01_28.tar.gz http://download.tensorflow.org/models/object_detection/rfcn_resnet101_coco_2018_01_28.tar.gz
+curl -o ssd_inception_v2_coco_2017_11_17.tar.gz http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2017_11_17.tar.gz
+tar -xvf ssd_inception_v2_coco_2017_11_17.tar.gz
+tar -xvf rfcn_resnet101_coco_2018_01_28.tar.gz.tar.gz 
+tar -xvf faster_rcnn_resnet101_coco_11_08_2017.tar.gz 
+```
+
 ### Generate the TFRecord files
 
     $ wget URL_FOR_TRAINING_DATA
