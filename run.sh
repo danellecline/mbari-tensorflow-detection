@@ -6,9 +6,8 @@
 # best to split the train/test for each model on different GPUs which each have 12GB of memory
 # The models use a lot of memory during training, and can spike during
 # testing at checkpoints
-BASE_DIR=~/Dropbox/GitHub/mbari-tensorflow-detection 
 source ~/Dropbox/GitHub/venv-aesa-tensorflow-detection-devbox/bin/activate
-pushd $BASE_DIR/tensorflow_models/research
+pushd $PWD/tensorflow_models/research
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim:`pwd`/object_detection
 popd
 export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64/ 
