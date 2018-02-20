@@ -1,11 +1,10 @@
-#!/usr/bin/env bash
-
-
+#!/bin/bash
+source $TF_VENV/bin/activate
 python create_tfrecord.py --data_dir \
-/Volumes/DeepLearningTests/training_data_to_export/ \
---collection  MBARI_BENTHIC_2017_300 \
---output_path MBARI_BENTHIC_2017_300_train_subset.record \
---label_map_path mbari_benthic_label_subset_map.pbtxt \
+$PWD/data \
+--collection  MBARI_BENTHIC_2017MSRCP \
+--output_path MBARI_BENTHIC_2017MSRCP_train_subset.record \
+--label_map_path $PWD/data/mbari_benthic_label_subset_map.pbtxt \
 --set train \
 --labels \
 BENTHOCODON \
@@ -14,10 +13,10 @@ PENIAGONE_SP_A \
 SCOTOPLANES_GLOBOSA \
 
 python create_tfrecord.py --data_dir \
-/Volumes/DeepLearningTests/training_data_to_export/ \
---collection  MBARI_BENTHIC_2017_300 \
---output_path MBARI_BENTHIC_2017_300_test_subset.record \
---label_map_path mbari_benthic_label_subset_map.pbtxt \
+$PWD/data \
+--collection  MBARI_BENTHIC_2017MSRCP\
+--output_path MBARI_BENTHIC_2017MSRCP_test_subset.record \
+--label_map_path $PWD/data/mbari_benthic_label_subset_map.pbtxt \
 --set test \
 --labels \
 BENTHOCODON \
@@ -27,7 +26,7 @@ SCOTOPLANES_GLOBOSA \
 
 exit
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
+$PWD/data \
 --collection  MBARI_BENTHIC_2017 \
 --output_path MBARI_BENTHIC_2017_train_peniagone_sp_a.record \
 --label_map_path mbari_benthic_label_peniagone_sp_a.pbtxt \
@@ -36,7 +35,7 @@ python create_tfrecord.py --data_dir \
 PENIAGONE_SP_A \
 
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
+$PWD/data \
 --collection  MBARI_BENTHIC_2017 \
 --output_path MBARI_BENTHIC_2017_test_peniagone_sp_a.record \
 --label_map_path mbari_benthic_label_peniagone_sp_a.pbtxt \
@@ -46,7 +45,7 @@ PENIAGONE_SP_A \
 exit
 
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
+$PWD/data \
 --collection  MBARI_BENTHIC_2017 \
 --output_path MBARI_BENTHIC_2017_train.record \
 --label_map_path mbari_benthic_label_map.pbtxt \
@@ -62,7 +61,7 @@ PENIAGONE_VITRAE \
 SCOTOPLANES_GLOBOSA \
 
 python create_tfrecord.py --data_dir \
-/Users/dcline/Dropbox/GitHub/mbari-tensorflow-detection/data/ \
+$PWD/data \
 --collection  MBARI_BENTHIC_2017 \
 --output_path MBARI_BENTHIC_2017_test.record \
 --label_map_path mbari_benthic_label_map.pbtxt \
